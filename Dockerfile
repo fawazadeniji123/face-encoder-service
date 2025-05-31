@@ -1,26 +1,27 @@
 FROM python:3.9-slim
 
-# Install basic system dependencies needed for your app
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Copy your requirements.txt (without dlib, we install dlib manually)
+# Install system dependencies needed for dlib and cmake
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    liblapack-dev \
+    libx11-dev \
+    libgtk-3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements.txt first
 COPY requirements.txt .
 
-# Upgrade pip and setuptools
-RUN pip install --upgrade pip setuptools wheel
+# Install dlib first explicitly (you can specify the version if you want)
+RUN pip install --no-cache-dir dlib
 
-# Install prebuilt dlib wheel for Python 3.9 on manylinux2014_x86_64
-RUN pip install https://github.com/Davisking/dlib/releases/download/v19.24/dlib-19.24.0-cp39-cp39-manylinux2014_x86_64.whl
+# Then install the rest of the requirements (without dlib in it)
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install other dependencies excluding dlib (make sure dlib NOT in requirements.txt)
-RUN pip install -r requirements.txt
-
+# Copy the rest of your application code
 COPY . .
-
-EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
