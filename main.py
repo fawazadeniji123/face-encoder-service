@@ -33,6 +33,7 @@ async def encode_face(files: list[UploadFile]):
                     status_code=400,
                     content={"error": "File size exceeds the limit of 5MB."},
                 )
+            print(file.filename)
             # Save uploaded image to a temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
                 tmp.write(await file.read())
@@ -43,7 +44,7 @@ async def encode_face(files: list[UploadFile]):
             boxes = face_recognition.face_locations(image, model="hog")
             encodings = face_recognition.face_encodings(image, boxes)
             for encoding in encodings:
-                knownEncodings.append(encoding)
+                knownEncodings.append(encoding.tolist())
 
             # Cleanup
             os.remove(tmp_path)
@@ -51,7 +52,7 @@ async def encode_face(files: list[UploadFile]):
         if not knownEncodings:
             return JSONResponse(status_code=400, content={"error": "No face detected."})
 
-        return {"encoding": knownEncodings}  # return first face encoding
+        return {"encoding": knownEncodings}  # return all face encodings
 
     except Exception:
         return JSONResponse(
