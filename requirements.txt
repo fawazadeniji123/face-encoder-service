@@ -1,7 +1,6 @@
 --find-links https://github.com/RPi-Distro/dlib-builds/releases/latest
 
 fastapi[all]
-# face-recognition>=1.3.0
 face-recognition==1.3.0
 dlib==19.24.2
 face-recognition-models>=0.3.0
